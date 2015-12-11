@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:annotation-config/>
+    <context:component-scan base-package="com.har01d.crawler" />
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations" value="classpath:zhihu-crawler.properties"/>
+    </bean>
+
+    <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean" />
+
+    <bean id="collectionCrawler" class="com.har01d.crawler.impl.CollectionCrawler">
+    </bean>
+
+    <bean id="collectionParser" class="com.har01d.crawler.impl.CollectionPageParser">
+    </bean>
+
+    <bean id="questionParser" class="com.har01d.crawler.impl.QuestionPageParser">
+    </bean>
+
+    <bean id="downloader" class="com.har01d.crawler.impl.ImageDownloader"/>
+
+    <bean id="queue" class="java.util.concurrent.LinkedBlockingQueue">
+        <constructor-arg value="${image.queue.size}"/>
+    </bean>
+
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <bean id="config" class="com.har01d.crawler.bean.Config">
+        <property name="imageDirectory" value="${image.directory}"/>
+        <property name="poolSize" value="${image.downloader.size}"/>
+    </bean>
+
+    <bean id="httpConfig" class="com.har01d.crawler.bean.HttpConfig">
+        <property name="connectTimeout" value="${connection.timeout}"/>
+        <property name="connectionRequestTimeout" value="${connection.request.timeout}"/>
+        <property name="socketTimeout" value="${socket.timeout}"/>
+        <property name="headers">
+            <map>
+                <entry key="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"/>
+                <entry key="Accept-Encoding" value="gzip, deflate, sdch"/>
+                <entry key="Accept-Language" value="en-US,en;q=0.8,zh-CN;q=0.6,zh-TW;q=0.4"/>
+                <entry key="Referer" value="http://www.zhihu.com/"/>
+            </map>
+        </property>
+        <property name="userAgents">
+            <list>
+                <!-- https://udger.com/resources/ua-list -->
+                <value>Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36</value>
+                <value>Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:42.0) Gecko/20100101 Firefox/42.0</value>
+                <value>Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1b3) Gecko/20090305 Firefox/3.1b3 GTB5</value>
+                <value>Mozilla/5.0 (Windows NT 6.1; WOW64; rv:33.0) Gecko/20100101 Firefox/33.0</value>
+                <value>Mozilla/5.0 (Windows NT 10.0; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0</value>
+                <value>Mozilla/5.0 (IE 11.0; Windows NT 6.3; WOW64; Trident/7.0; Touch; rv:11.0) like Gecko</value>
+                <value>Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Win64; x64; Trident/6.0)</value>
+                <value>Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)</value>
+                <value>Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)</value>
+                <value>Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; TencentTraveler 4.0; .NET CLR 2.0.50727)</value>
+                <value>Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.57 Safari/537.17 QIHU 360EE</value>
+                <value>Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.152 Safari/537.36 QIHU 360SE</value>
+                <value>Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.7 (KHTML, like Gecko) Ubuntu/11.10 Chromium/16.0.912.21 Chrome/16.0.912.21 Safari/535.7</value>
+                <value>Mozilla/5.0 (Windows; U; Windows NT 6.1; zh_CN) AppleWebKit/534.7 (KHTML, like Gecko) Chrome/7.0 baidubrowser/1.x Safari/534.7</value>
+            </list>
+        </property>
+    </bean>
+
+</beans>
