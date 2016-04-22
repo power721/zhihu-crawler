@@ -39,6 +39,7 @@ public class QuestionPageParser implements Parser {
     @Override public ParseResult parse(String url) throws IOException, InterruptedException {
         int offset = 0;
         int pageSize = 50;
+        boolean isFirstParse = service.getPageAccessTime(url) != 0;
         String html = HttpUtils.getHtml(url, httpConfig);
         Document doc = Jsoup.parse(html);
         Elements images = doc.select("img");
@@ -59,6 +60,9 @@ public class QuestionPageParser implements Parser {
 
         while (true) {
             offset += pageSize;
+            if (!isFirstParse && offset >= 150) {
+                break;
+            }
 
             Map<String, String> data = new HashMap<>();
             data.put("method", "next");
