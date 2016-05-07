@@ -7,9 +7,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class Config {
 
-    @Autowired private Downloader downloader;
+    @Autowired
+    private Downloader downloader;
 
-    @Autowired private LinkedBlockingQueue<ImageInfo> queue;
+    @Autowired
+    private LinkedBlockingQueue<ImageInfo> queue;
 
     private String imageDirectory;
 

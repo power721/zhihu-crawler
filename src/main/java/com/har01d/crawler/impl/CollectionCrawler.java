@@ -15,15 +15,22 @@ public class CollectionCrawler implements Crawler {
 
     private static final Logger LOGGER = LogManager.getLogger(CollectionCrawler.class);
 
-    @Autowired private Parser collectionParser;
+    @Autowired
+    private Parser collectionParser;
 
-    @Autowired private Parser questionParser;
+    @Autowired
+    private Parser questionParser;
 
-    @Autowired @Value("${urls}") private List<String> baseUrls;
+    @Autowired
+    @Value("${urls}")
+    private List<String> baseUrls;
 
-    @Autowired @Value("${collection.crawler.sleep.time}") private long sleep;
+    @Autowired
+    @Value("${collection.crawler.sleep.time}")
+    private long sleep;
 
-    @Override public void run() {
+    @Override
+    public void run() {
         for (String baseUrl : baseUrls) {
             if (baseUrl.startsWith("http://www.zhihu.com/collection/")) {
                 try {
@@ -46,11 +53,13 @@ public class CollectionCrawler implements Crawler {
         }
     }
 
-    @Override public void crawler() throws InterruptedException {
+    @Override
+    public void crawler() throws InterruptedException {
         throw new UnsupportedOperationException();
     }
 
-    @Override public void crawler(String baseUrl) throws InterruptedException {
+    @Override
+    public void crawler(String baseUrl) throws InterruptedException {
         String url = baseUrl;
         while (true) {
             try {

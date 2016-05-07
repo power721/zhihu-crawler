@@ -28,15 +28,21 @@ public class QuestionPageParser implements Parser {
 
     private static final Logger LOGGER = LogManager.getLogger(QuestionPageParser.class);
 
-    @Autowired private ZhihuService service;
+    @Autowired
+    private ZhihuService service;
 
-    @Autowired private HttpConfig httpConfig;
+    @Autowired
+    private HttpConfig httpConfig;
 
-    @Autowired private LinkedBlockingQueue<ImageInfo> queue;
+    @Autowired
+    private LinkedBlockingQueue<ImageInfo> queue;
 
-    @Autowired @Value("${question.parser.sleep.time}") private long sleep;
+    @Autowired
+    @Value("${question.parser.sleep.time}")
+    private long sleep;
 
-    @Override public ParseResult parse(String url) throws IOException, InterruptedException {
+    @Override
+    public ParseResult parse(String url) throws IOException, InterruptedException {
         int offset = 0;
         int pageSize = 50;
         boolean isFirstParse = service.getPageAccessTime(url) != 0;

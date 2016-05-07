@@ -23,15 +23,22 @@ public class CollectionPageParser implements Parser {
     private static final Logger LOGGER = LogManager.getLogger(CollectionPageParser.class);
     private static final long FIRST_ACCESS_TIME = 0L;
 
-    @Autowired private ZhihuService service;
+    @Autowired
+    private ZhihuService service;
 
-    @Autowired private HttpConfig httpConfig;
+    @Autowired
+    private HttpConfig httpConfig;
 
-    @Autowired @Value("${collection.question.href.selector}") private String questionSelector;
+    @Autowired
+    @Value("${collection.question.href.selector}")
+    private String questionSelector;
 
-    @Autowired @Value("${collection.next.href.selector}") private String nextUrlSelector;
+    @Autowired
+    @Value("${collection.next.href.selector}")
+    private String nextUrlSelector;
 
-    @Override public ParseResult parse(String baseUrl) throws IOException {
+    @Override
+    public ParseResult parse(String baseUrl) throws IOException {
         List<String> urls = new ArrayList<>();
         ParseResult result = new ParseResult(urls);
         String html = HttpUtils.getHtml(baseUrl, httpConfig);

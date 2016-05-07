@@ -30,7 +30,8 @@ public class Worker implements Runnable {
         this.queue = config.getQueue();
     }
 
-    @Override public void run() {
+    @Override
+    public void run() {
         try {
             while (true) {
                 ImageInfo imageInfo = queue.poll(500L, TimeUnit.MILLISECONDS);

@@ -30,7 +30,8 @@ public class PageInfo {
         this.atime = atime;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "PageInfo{" +
             "url='" + url + '\'' +
             ", ctime=" + ctime +

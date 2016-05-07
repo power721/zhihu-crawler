@@ -61,7 +61,8 @@ public class HttpConfig {
         this.socketTimeout = socketTimeout;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "HttpConfig{" +
             "userAgents=" + userAgents +
             ", headers=" + headers +

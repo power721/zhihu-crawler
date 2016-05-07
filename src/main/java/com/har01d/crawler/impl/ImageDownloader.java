@@ -32,13 +32,16 @@ public class ImageDownloader implements Downloader {
 
     private static final Logger LOGGER = LogManager.getLogger(ImageDownloader.class);
 
-    @Autowired private ZhihuService service;
+    @Autowired
+    private ZhihuService service;
 
-    @Autowired private HttpConfig httpConfig;
+    @Autowired
+    private HttpConfig httpConfig;
 
     private int counter;
 
-    @Override public boolean download(File imageDirectory, final String imageUrl) throws IOException {
+    @Override
+    public boolean download(File imageDirectory, final String imageUrl) throws IOException {
         String[] components = imageUrl.split("/");
         final String fileName = components[components.length - 1];
         final File file = new File(imageDirectory, fileName);

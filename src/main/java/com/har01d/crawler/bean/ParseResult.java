@@ -39,7 +39,8 @@ public class ParseResult {
         this.nextUrl = nextUrl;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "ParseResult{" +
             "nextUrl='" + nextUrl + '\'' +
             ", urls=" + urls +

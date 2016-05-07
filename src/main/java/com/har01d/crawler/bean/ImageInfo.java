@@ -65,7 +65,8 @@ public class ImageInfo {
         this.mtime = mtime;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "ImageInfo{" +
             "url='" + url + '\'' +
             ", path='" + path + '\'' +
