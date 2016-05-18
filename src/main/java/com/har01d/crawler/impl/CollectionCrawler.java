@@ -21,11 +21,9 @@ public class CollectionCrawler implements Crawler {
     @Autowired
     private Parser questionParser;
 
-    @Autowired
     @Value("${urls}")
     private List<String> baseUrls;
 
-    @Autowired
     @Value("${collection.crawler.sleep.time}")
     private long sleep;
 

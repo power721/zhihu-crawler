@@ -29,11 +29,9 @@ public class CollectionPageParser implements Parser {
     @Autowired
     private HttpConfig httpConfig;
 
-    @Autowired
     @Value("${collection.question.href.selector}")
     private String questionSelector;
 
-    @Autowired
     @Value("${collection.next.href.selector}")
     private String nextUrlSelector;
 

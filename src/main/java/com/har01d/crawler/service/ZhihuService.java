@@ -24,15 +24,12 @@ public class ZhihuService {
 
     public PageInfo getPageInfo(String url) {
         List<PageInfo> results =
-            this.jdbcTemplate.query("SELECT url,ctime,atime FROM zhihu_pages WHERE url=?", new RowMapper<PageInfo>() {
-                @Override
-                public PageInfo mapRow(ResultSet resultSet, int i) throws SQLException {
-                    PageInfo pageInfo = new PageInfo();
-                    pageInfo.setAtime(resultSet.getLong("atime"));
-                    pageInfo.setCtime(resultSet.getLong("ctime"));
-                    pageInfo.setUrl(resultSet.getString("url"));
-                    return pageInfo;
-                }
+            this.jdbcTemplate.query("SELECT url,ctime,atime FROM zhihu_pages WHERE url=?", (resultSet, i) -> {
+                PageInfo pageInfo = new PageInfo();
+                pageInfo.setAtime(resultSet.getLong("atime"));
+                pageInfo.setCtime(resultSet.getLong("ctime"));
+                pageInfo.setUrl(resultSet.getString("url"));
+                return pageInfo;
             }, url);
 
         if (results.isEmpty()) {
@@ -44,11 +41,8 @@ public class ZhihuService {
 
     public long getPageAccessTime(String url) {
         List<Long> results =
-            this.jdbcTemplate.query("SELECT atime FROM zhihu_pages WHERE url=?", new RowMapper<Long>() {
-                @Override
-                public Long mapRow(ResultSet resultSet, int i) throws SQLException {
-                    return resultSet.getLong(1);
-                }
+            this.jdbcTemplate.query("SELECT atime FROM zhihu_pages WHERE url=?", (resultSet, i) -> {
+                return resultSet.getLong(1);
             }, url);
 
         if (results.isEmpty()) {
@@ -69,17 +63,14 @@ public class ZhihuService {
 
     public ImageInfo getImageInfo(String url) {
         List<ImageInfo> results = this.jdbcTemplate
-            .query("SELECT url,size,path,ctime,mtime FROM zhihu_images WHERE url=?", new RowMapper<ImageInfo>() {
-                @Override
-                public ImageInfo mapRow(ResultSet resultSet, int i) throws SQLException {
-                    ImageInfo imageInfo = new ImageInfo();
-                    imageInfo.setMtime(resultSet.getLong("mtime"));
-                    imageInfo.setCtime(resultSet.getLong("ctime"));
-                    imageInfo.setUrl(resultSet.getString("url"));
-                    imageInfo.setPath(resultSet.getString("path"));
-                    imageInfo.setSize(resultSet.getLong("size"));
-                    return imageInfo;
-                }
+            .query("SELECT url,size,path,ctime,mtime FROM zhihu_images WHERE url=?", (resultSet, i) -> {
+                ImageInfo imageInfo = new ImageInfo();
+                imageInfo.setMtime(resultSet.getLong("mtime"));
+                imageInfo.setCtime(resultSet.getLong("ctime"));
+                imageInfo.setUrl(resultSet.getString("url"));
+                imageInfo.setPath(resultSet.getString("path"));
+                imageInfo.setSize(resultSet.getLong("size"));
+                return imageInfo;
             }, url);
 
         if (results.isEmpty()) {
@@ -91,11 +82,8 @@ public class ZhihuService {
 
     public long getImageModifyTime(String url) {
         List<Long> results =
-            this.jdbcTemplate.query("SELECT atime FROM zhihu_images WHERE url=?", new RowMapper<Long>() {
-                @Override
-                public Long mapRow(ResultSet resultSet, int i) throws SQLException {
-                    return resultSet.getLong(1);
-                }
+            this.jdbcTemplate.query("SELECT atime FROM zhihu_images WHERE url=?", (resultSet, i) -> {
+                return resultSet.getLong(1);
             }, url);
 
         if (results.isEmpty()) {

@@ -37,7 +37,6 @@ public class QuestionPageParser implements Parser {
     @Autowired
     private LinkedBlockingQueue<ImageInfo> queue;
 
-    @Autowired
     @Value("${question.parser.sleep.time}")
     private long sleep;
 
@@ -50,18 +49,7 @@ public class QuestionPageParser implements Parser {
         Document doc = Jsoup.parse(html);
         Elements images = doc.select("img");
 
-        for (Element image : images) {
-            String imageUrl = image.attr("src");
-            LOGGER.debug("original image url: {}", imageUrl);
-            if (isValidImage(imageUrl)) {
-                ImageInfo imageInfo = service.getImageInfo(imageUrl);
-                if (imageInfo == null) {
-                    LOGGER.info("add image url: {}", imageUrl);
-                    imageInfo = new ImageInfo(imageUrl, url);
-                    queue.put(imageInfo);
-                }
-            }
-        }
+        handleImages(url, images);
         service.updatePageAccessTime(url);
 
         while (true) {
@@ -97,23 +85,27 @@ public class QuestionPageParser implements Parser {
                 doc = Jsoup.parse(html);
                 images = doc.select("img");
 
-                for (Element image : images) {
-                    String imageUrl = image.attr("src");
-                    LOGGER.debug("original image url: {}", imageUrl);
-                    if (isValidImage(imageUrl)) {
-                        ImageInfo imageInfo = service.getImageInfo(imageUrl);
-                        if (imageInfo == null) {
-                            LOGGER.info("add image url: {}", imageUrl);
-                            imageInfo = new ImageInfo(imageUrl, url);
-                            queue.put(imageInfo);
-                        }
-                    }
-                }
+                handleImages(url, images);
             }
             Thread.sleep(sleep);
         }
         service.updatePageAccessTime(url);
         return null;
+    }
+
+    private void handleImages(String url, Elements images) throws InterruptedException {
+        for (Element image : images) {
+            String imageUrl = image.attr("src");
+            LOGGER.debug("original image url: {}", imageUrl);
+            if (isValidImage(imageUrl)) {
+                ImageInfo imageInfo = service.getImageInfo(imageUrl);
+                if (imageInfo == null) {
+                    LOGGER.info("add image url: {}", imageUrl);
+                    imageInfo = new ImageInfo(imageUrl, url);
+                    queue.put(imageInfo);
+                }
+            }
+        }
     }
 
     private boolean isValidImage(String imageUrl) {

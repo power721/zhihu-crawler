@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 
 public class ImageDownloader implements Downloader {
@@ -56,10 +57,9 @@ public class ImageDownloader implements Downloader {
             .setConnectionRequestTimeout(httpConfig.getConnectionRequestTimeout())
             .setSocketTimeout(httpConfig.getSocketTimeout()).build();
 
-        List<Header> headers = new ArrayList<>();
-        for (Map.Entry<String, String> entry : httpConfig.getHeaders().entrySet()) {
-            headers.add(new BasicHeader(entry.getKey(), entry.getValue()));
-        }
+        List<Header> headers =
+            httpConfig.getHeaders().entrySet().stream().map(entry -> new BasicHeader(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
 
         CloseableHttpClient httpClient =
             HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultHeaders(headers)
@@ -69,31 +69,29 @@ public class ImageDownloader implements Downloader {
         LOGGER.info("Executing download request {}", httpget.getRequestLine());
 
         // Create a custom response handler
-        ResponseHandler<Boolean> responseHandler = new ResponseHandler<Boolean>() {
-            public Boolean handleResponse(final HttpResponse response) throws IOException {
-                int status = response.getStatusLine().getStatusCode();
-                if (status >= 200 && status < 300) {
-                    HttpEntity entity = response.getEntity();
-                    if (entity == null) {
-                        return false;
-                    } else {
-                        FileUtils.copyInputStreamToFile(entity.getContent(), file);
-                        long size = entity.getContentLength();
-                        if (size != file.length()) {
-                            LOGGER.warn("download {} failed, expected size {}, got {}!", imageUrl, size, file.length());
-                            return false;
-                        }
-                        LOGGER.info("download {} completed, file size {}, total download {} images.", imageUrl,
-                            file.length(), counter);
-                        service.insertImage(imageUrl, file.getAbsolutePath(), size);
-                        counter++;
-                        return true;
-                    }
-                } else if (status >= 500 && status <= 599) {
-                    throw new ServerSideException("Unexpected response status: " + status);
+        ResponseHandler<Boolean> responseHandler = response -> {
+            int status = response.getStatusLine().getStatusCode();
+            if (status >= 200 && status < 300) {
+                HttpEntity entity = response.getEntity();
+                if (entity == null) {
+                    return false;
                 } else {
-                    throw new ClientProtocolException("Unexpected response status: " + status);
+                    FileUtils.copyInputStreamToFile(entity.getContent(), file);
+                    long size = entity.getContentLength();
+                    if (size != file.length()) {
+                        LOGGER.warn("download {} failed, expected size {}, got {}!", imageUrl, size, file.length());
+                        return false;
+                    }
+                    LOGGER.info("download {} completed, file size {}, total download {} images.", imageUrl,
+                        file.length(), counter);
+                    service.insertImage(imageUrl, file.getAbsolutePath(), size);
+                    counter++;
+                    return true;
                 }
+            } else if (status >= 500 && status <= 599) {
+                throw new ServerSideException("Unexpected response status: " + status);
+            } else {
+                throw new ClientProtocolException("Unexpected response status: " + status);
             }
         };
 

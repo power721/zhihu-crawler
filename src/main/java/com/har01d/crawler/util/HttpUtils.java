@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 public final class HttpUtils {
@@ -40,39 +41,33 @@ public final class HttpUtils {
             .setConnectionRequestTimeout(config.getConnectionRequestTimeout())
             .setSocketTimeout(config.getSocketTimeout()).build();
 
-        List<Header> headers = new ArrayList<>();
-        for (Map.Entry<String, String> entry : config.getHeaders().entrySet()) {
-            headers.add(new BasicHeader(entry.getKey(), entry.getValue()));
-        }
+        List<Header> headers =
+            config.getHeaders().entrySet().stream().map(entry -> new BasicHeader(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
 
         CloseableHttpClient httpClient =
             HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultHeaders(headers)
                 .setUserAgent(userAgent).build();
 
         HttpPost httpPost = new HttpPost(url);
-        List<NameValuePair> urlParameters = new ArrayList<>();
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            urlParameters.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
-        }
+        List<NameValuePair> urlParameters =
+            data.entrySet().stream().map(entry -> new BasicNameValuePair(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
         httpPost.setEntity(new UrlEncodedFormEntity(urlParameters));
 
         LOGGER.info("Executing request {}", httpPost.getRequestLine());
 
         // Create a custom response handler
-        ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
-
-            public String handleResponse(final HttpResponse response) throws IOException {
-                int status = response.getStatusLine().getStatusCode();
-                if (status >= 200 && status < 300) {
-                    HttpEntity entity = response.getEntity();
-                    return entity != null ? EntityUtils.toString(entity) : null;
-                } else if (status >= 500 && status <= 599) {
-                    throw new ServerSideException("Unexpected response status: " + status);
-                } else {
-                    throw new ClientProtocolException("Unexpected response status: " + status);
-                }
+        ResponseHandler<String> responseHandler = response -> {
+            int status = response.getStatusLine().getStatusCode();
+            if (status >= 200 && status < 300) {
+                HttpEntity entity = response.getEntity();
+                return entity != null ? EntityUtils.toString(entity) : null;
+            } else if (status >= 500 && status <= 599) {
+                throw new ServerSideException("Unexpected response status: " + status);
+            } else {
+                throw new ClientProtocolException("Unexpected response status: " + status);
             }
-
         };
 
         try {
@@ -92,10 +87,9 @@ public final class HttpUtils {
             .setConnectionRequestTimeout(config.getConnectionRequestTimeout())
             .setSocketTimeout(config.getSocketTimeout()).build();
 
-        List<Header> headers = new ArrayList<>();
-        for (Map.Entry<String, String> entry : config.getHeaders().entrySet()) {
-            headers.add(new BasicHeader(entry.getKey(), entry.getValue()));
-        }
+        List<Header> headers =
+            config.getHeaders().entrySet().stream().map(entry -> new BasicHeader(entry.getKey(), entry.getValue()))
+                .collect(Collectors.toList());
 
         CloseableHttpClient httpClient =
             HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultHeaders(headers)
@@ -105,20 +99,16 @@ public final class HttpUtils {
         LOGGER.info("Executing request {}", httpget.getRequestLine());
 
         // Create a custom response handler
-        ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
-
-            public String handleResponse(final HttpResponse response) throws IOException {
-                int status = response.getStatusLine().getStatusCode();
-                if (status >= 200 && status < 300) {
-                    HttpEntity entity = response.getEntity();
-                    return entity != null ? EntityUtils.toString(entity) : null;
-                } else if (status >= 500 && status <= 599) {
-                    throw new ServerSideException("Unexpected response status: " + status);
-                } else {
-                    throw new ClientProtocolException("Unexpected response status: " + status);
-                }
+        ResponseHandler<String> responseHandler = response -> {
+            int status = response.getStatusLine().getStatusCode();
+            if (status >= 200 && status < 300) {
+                HttpEntity entity = response.getEntity();
+                return entity != null ? EntityUtils.toString(entity) : null;
+            } else if (status >= 500 && status <= 599) {
+                throw new ServerSideException("Unexpected response status: " + status);
+            } else {
+                throw new ClientProtocolException("Unexpected response status: " + status);
             }
-
         };
 
         try {
