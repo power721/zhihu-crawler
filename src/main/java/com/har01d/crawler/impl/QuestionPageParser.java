@@ -27,6 +27,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class QuestionPageParser implements Parser {
 
     private static final Logger LOGGER = LogManager.getLogger(QuestionPageParser.class);
+    private static final int MIN_VOTE = 50;
 
     @Autowired
     private ZhihuService service;
@@ -47,9 +48,8 @@ public class QuestionPageParser implements Parser {
         boolean isFirstParse = service.getPageAccessTime(url) != 0;
         String html = HttpUtils.getHtml(url, httpConfig);
         Document doc = Jsoup.parse(html);
-        Elements images = doc.select("img");
 
-        handleImages(url, images);
+        getImages(url, doc);
         service.updatePageAccessTime(url);
 
         while (true) {
@@ -80,17 +80,37 @@ public class QuestionPageParser implements Parser {
                 break;
             }
 
+            int maxVote = 0;
             for (Object item : items) {
                 html = (String) item;
                 doc = Jsoup.parse(html);
-                images = doc.select("img");
-
-                handleImages(url, images);
+                int vote = getImages(url, doc);
+                maxVote = Math.max(maxVote, vote);
+            }
+            if (maxVote < MIN_VOTE) {
+                break;
             }
             Thread.sleep(sleep);
         }
         service.updatePageAccessTime(url);
         return null;
+    }
+
+    private int getImages(String url, Document doc) throws InterruptedException {
+        Elements votes = doc.select("div.zm-item-element-info");
+        int maxVote = 0;
+        for (Element element : votes) {
+            int voteCount = Integer.valueOf(element.attr("data-votecount"));
+            maxVote = Math.max(maxVote, voteCount);
+            if (voteCount >= MIN_VOTE) {
+                Element answer = element.parent().parent();
+                int answerID = Integer.valueOf(answer.attr("data-aid"));
+                Elements images = answer.select("div.zm-item-rich-text img");
+                LOGGER.info("answerID: " + answerID + " vote count: " + voteCount + " images: " + images.size());
+                handleImages(url, images);
+            }
+        }
+        return maxVote;
     }
 
     private void handleImages(String url, Elements images) throws InterruptedException {

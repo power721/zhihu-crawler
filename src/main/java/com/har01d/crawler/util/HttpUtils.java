@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -58,17 +57,7 @@ public final class HttpUtils {
         LOGGER.info("Executing request {}", httpPost.getRequestLine());
 
         // Create a custom response handler
-        ResponseHandler<String> responseHandler = response -> {
-            int status = response.getStatusLine().getStatusCode();
-            if (status >= 200 && status < 300) {
-                HttpEntity entity = response.getEntity();
-                return entity != null ? EntityUtils.toString(entity) : null;
-            } else if (status >= 500 && status <= 599) {
-                throw new ServerSideException("Unexpected response status: " + status);
-            } else {
-                throw new ClientProtocolException("Unexpected response status: " + status);
-            }
-        };
+        ResponseHandler<String> responseHandler = new MyResponseHandler();
 
         try {
             return httpClient.execute(httpPost, responseHandler);
@@ -99,17 +88,7 @@ public final class HttpUtils {
         LOGGER.info("Executing request {}", httpget.getRequestLine());
 
         // Create a custom response handler
-        ResponseHandler<String> responseHandler = response -> {
-            int status = response.getStatusLine().getStatusCode();
-            if (status >= 200 && status < 300) {
-                HttpEntity entity = response.getEntity();
-                return entity != null ? EntityUtils.toString(entity) : null;
-            } else if (status >= 500 && status <= 599) {
-                throw new ServerSideException("Unexpected response status: " + status);
-            } else {
-                throw new ClientProtocolException("Unexpected response status: " + status);
-            }
-        };
+        ResponseHandler<String> responseHandler = new MyResponseHandler();
 
         try {
             return httpClient.execute(httpget, responseHandler);
@@ -129,6 +108,21 @@ public final class HttpUtils {
 
         URL spec = new URL(parent, url);
         return spec.toExternalForm();
+    }
+
+    private static class MyResponseHandler implements ResponseHandler<String> {
+        @Override
+        public String handleResponse(HttpResponse response) throws IOException {
+            int status = response.getStatusLine().getStatusCode();
+            if (status >= 200 && status < 300) {
+                HttpEntity entity = response.getEntity();
+                return entity != null ? EntityUtils.toString(entity) : null;
+            } else if (status >= 500 && status <= 599) {
+                throw new ServerSideException("Unexpected response status: " + status);
+            } else {
+                throw new ClientProtocolException("Unexpected response status: " + status);
+            }
+        }
     }
 
 }
