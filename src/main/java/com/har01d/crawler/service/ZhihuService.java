@@ -8,8 +8,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 @Repository
@@ -71,7 +69,7 @@ public class ZhihuService {
                 imageInfo.setPath(resultSet.getString("path"));
                 imageInfo.setSize(resultSet.getLong("size"));
                 return imageInfo;
-            }, url);
+            }, getImageNameFromURL(url));
 
         if (results.isEmpty()) {
             return null;
@@ -84,7 +82,7 @@ public class ZhihuService {
         List<Long> results =
             this.jdbcTemplate.query("SELECT atime FROM zhihu_images WHERE url=?", (resultSet, i) -> {
                 return resultSet.getLong(1);
-            }, url);
+            }, getImageNameFromURL(url));
 
         if (results.isEmpty()) {
             return 0;
@@ -95,18 +93,26 @@ public class ZhihuService {
 
     public int insertImage(String url, long size) {
         long ctime = System.currentTimeMillis();
-        return this.jdbcTemplate.update("INSERT INTO zhihu_images (url, size, ctime) VALUES (?, ?)", url, size, ctime);
+        return this.jdbcTemplate.update("INSERT INTO zhihu_images (url, size, ctime) VALUES (?, ?)", getImageNameFromURL(url), size, ctime);
     }
 
     public int insertImage(String url, String path, long size) {
         long ctime = System.currentTimeMillis();
         return this.jdbcTemplate
-            .update("INSERT INTO zhihu_images (url, path, size, ctime) VALUES (?, ?, ?, ?)", url, path, size, ctime);
+            .update("INSERT INTO zhihu_images (url, path, size, ctime) VALUES (?, ?, ?, ?)", getImageNameFromURL(url), path, size, ctime);
     }
 
     public int updateImage(String url, String path) {
         long mtime = System.currentTimeMillis();
-        return this.jdbcTemplate.update("UPDATE zhihu_images SET mtime=?,path=? WHERE url=?", mtime, path, url);
+        return this.jdbcTemplate.update("UPDATE zhihu_images SET mtime=?,path=? WHERE url=?", mtime, path, getImageNameFromURL(url));
+    }
+
+    public String getImageNameFromURL(String url) {
+        int index = url.lastIndexOf('/');
+        if (index > 0) {
+            return url.substring(index + 1);
+        }
+        return url;
     }
 
 }

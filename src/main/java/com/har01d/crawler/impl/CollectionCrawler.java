@@ -27,10 +27,13 @@ public class CollectionCrawler implements Crawler {
     @Value("${collection.crawler.sleep.time}")
     private long sleep;
 
+    @Value("${base.url}")
+    private String zhihuURL;
+
     @Override
     public void run() {
         for (String baseUrl : baseUrls) {
-            if (baseUrl.startsWith("http://www.zhihu.com/collection/")) {
+            if (baseUrl.startsWith(zhihuURL + "/collection/")) {
                 try {
                     crawler(baseUrl);
                     LOGGER.info("crawler for {} completed.", baseUrl);
@@ -39,7 +42,7 @@ public class CollectionCrawler implements Crawler {
                 } catch (Throwable e) {
                     LOGGER.error("crawler failed!", e);
                 }
-            } else if (baseUrl.startsWith("http://www.zhihu.com/question/")) {
+            } else if (baseUrl.startsWith(zhihuURL + "/question/")) {
                 try {
                     questionParser.parse(baseUrl);
                 } catch (InterruptedException e) {

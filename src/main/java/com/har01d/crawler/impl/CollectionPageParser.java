@@ -51,8 +51,9 @@ public class CollectionPageParser implements Parser {
             if (url != null) {
                 String pageUrl = HttpUtils.normalizeUrl(baseUrl, url);
                 long atime = service.getPageAccessTime(pageUrl);
-                LOGGER.info("get question url: {}, last access time {}", pageUrl, atime);
-                if ((time - atime) >= 24 * 3600 * 1000) {
+                boolean crawle = (time - atime) >= 12 * 3600 * 1000;
+                LOGGER.info("get question url: {}, last access time {} {}", pageUrl, atime, crawle);
+                if (crawle) {
                     urls.add(pageUrl);
                     if (atime == FIRST_ACCESS_TIME) {
                         service.insertPage(pageUrl, time);

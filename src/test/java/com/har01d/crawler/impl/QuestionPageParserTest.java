@@ -12,6 +12,6 @@ public class QuestionPageParserTest {
     public void test() throws Exception {
         ApplicationContext context = new ClassPathXmlApplicationContext("app-context.xml");
         Parser parser = context.getBean(QuestionPageParser.class);
-        parser.parse("https://www.zhihu.com/question/39164140");
+        parser.parse("https://www.zhihu.com/question/39833238");
     }
 }

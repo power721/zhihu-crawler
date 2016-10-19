@@ -27,7 +27,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class QuestionPageParser implements Parser {
 
     private static final Logger LOGGER = LogManager.getLogger(QuestionPageParser.class);
-    private static final int MIN_VOTE = 50;
+    private static final int MIN_VOTE = 30;
 
     @Autowired
     private ZhihuService service;
@@ -40,6 +40,9 @@ public class QuestionPageParser implements Parser {
 
     @Value("${question.parser.sleep.time}")
     private long sleep;
+
+    @Value("${base.url}")
+    private String zhihuURL;
 
     @Override
     public ParseResult parse(String url) throws IOException, InterruptedException {
@@ -63,7 +66,7 @@ public class QuestionPageParser implements Parser {
             data.put("params",
                 "{\"url_token\":" + getUrlToken(url) + ",\"pagesize\":" + pageSize + ",\"offset\":" + offset + "}");
             LOGGER.info("url: {}, pageSize: {}, offset: {}", url, pageSize, offset);
-            String json = HttpUtils.post("http://www.zhihu.com/node/QuestionAnswerListV2", data, httpConfig);
+            String json = HttpUtils.post(zhihuURL + "/node/QuestionAnswerListV2", data, httpConfig);
             //            LOGGER.debug(json);
 
             JSONParser parser = new JSONParser();
@@ -97,7 +100,7 @@ public class QuestionPageParser implements Parser {
     }
 
     private int getImages(String url, Document doc) throws InterruptedException {
-        Elements votes = doc.select("div.zm-item-element-info");
+        Elements votes = doc.select("div.zm-item-vote-info");
         int maxVote = 0;
         for (Element element : votes) {
             int voteCount = Integer.valueOf(element.attr("data-votecount"));
@@ -133,7 +136,7 @@ public class QuestionPageParser implements Parser {
     }
 
     private String getUrlToken(String url) {
-        return url.substring("http://www.zhihu.com/question/".length(), url.length());
+        return url.substring((zhihuURL + "/question/").length(), url.length());
     }
 
 }
