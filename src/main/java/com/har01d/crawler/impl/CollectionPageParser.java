@@ -5,6 +5,9 @@ import com.har01d.crawler.bean.HttpConfig;
 import com.har01d.crawler.bean.ParseResult;
 import com.har01d.crawler.service.ZhihuService;
 import com.har01d.crawler.util.HttpUtils;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jsoup.Jsoup;
@@ -13,10 +16,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class CollectionPageParser implements Parser {
 
@@ -56,6 +55,7 @@ public class CollectionPageParser implements Parser {
                 if (crawle) {
                     urls.add(pageUrl);
                     if (atime == FIRST_ACCESS_TIME) {
+                        LOGGER.info("find new page {}", pageUrl);
                         service.insertPage(pageUrl, time);
                     }
                 }

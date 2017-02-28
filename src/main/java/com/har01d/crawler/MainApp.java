@@ -1,16 +1,16 @@
 package com.har01d.crawler;
 
 import com.har01d.crawler.bean.Config;
+import com.har01d.crawler.impl.MyThreadFactory;
 import com.har01d.crawler.impl.Worker;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import java.util.Calendar;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class MainApp {
 
@@ -22,10 +22,11 @@ public class MainApp {
 
         Config config = context.getBean(Config.class);
         Crawler crawler = context.getBean(Crawler.class);
-        ExecutorService crawlerThreadPool = Executors.newSingleThreadExecutor();
+        ExecutorService crawlerThreadPool = Executors.newSingleThreadExecutor(new MyThreadFactory("crawler"));
         crawlerThreadPool.submit(crawler);
 
-        ExecutorService downloadThreadPool = Executors.newFixedThreadPool(config.getPoolSize());
+        ExecutorService downloadThreadPool = Executors
+            .newFixedThreadPool(config.getPoolSize(), new MyThreadFactory("worker"));
         Worker[] workers = new Worker[config.getPoolSize()];
         for (int i = 0; i < config.getPoolSize(); i++) {
             workers[i] = new Worker(config);

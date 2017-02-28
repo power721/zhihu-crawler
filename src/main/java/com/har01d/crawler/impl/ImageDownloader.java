@@ -4,13 +4,18 @@ import com.har01d.crawler.Downloader;
 import com.har01d.crawler.bean.HttpConfig;
 import com.har01d.crawler.exception.ServerSideException;
 import com.har01d.crawler.service.ZhihuService;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -19,14 +24,6 @@ import org.apache.http.message.BasicHeader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 
 public class ImageDownloader implements Downloader {
@@ -55,6 +52,7 @@ public class ImageDownloader implements Downloader {
         String userAgent = httpConfig.getUserAgent();
         final RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(httpConfig.getConnectTimeout())
             .setConnectionRequestTimeout(httpConfig.getConnectionRequestTimeout())
+            .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
             .setSocketTimeout(httpConfig.getSocketTimeout()).build();
 
         List<Header> headers =

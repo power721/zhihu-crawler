@@ -3,13 +3,14 @@ package com.har01d.crawler.impl;
 import com.har01d.crawler.Crawler;
 import com.har01d.crawler.Parser;
 import com.har01d.crawler.bean.ParseResult;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
-import java.io.IOException;
-import java.util.List;
 
 public class CollectionCrawler implements Crawler {
 
@@ -30,8 +31,15 @@ public class CollectionCrawler implements Crawler {
     @Value("${base.url}")
     private String zhihuURL;
 
+    @Value("${page.parser.thread.size}")
+    private int parserThread;
+
+    private ExecutorService executorService;
+
     @Override
     public void run() {
+        executorService = Executors.newFixedThreadPool(parserThread, new MyThreadFactory("question"));
+
         for (String baseUrl : baseUrls) {
             if (baseUrl.startsWith(zhihuURL + "/collection/")) {
                 try {
@@ -67,11 +75,15 @@ public class CollectionCrawler implements Crawler {
                 ParseResult result = collectionParser.parse(url);
                 LOGGER.debug(result);
                 for (String pageUrl : result.getUrls()) {
-                    try {
-                        questionParser.parse(pageUrl);
-                    } catch (IOException e) {
-                        LOGGER.error("get html for url {} failed!", pageUrl, e);
-                    }
+                    executorService.submit(() -> {
+                        try {
+                            questionParser.parse(pageUrl);
+                        } catch (IOException e) {
+                            LOGGER.error("get html for url {} failed!", pageUrl, e);
+                        } catch (InterruptedException e) {
+                            // ignore
+                        }
+                    });
                 }
 
                 if (!result.hasNext()) {

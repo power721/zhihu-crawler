@@ -2,6 +2,12 @@ package com.har01d.crawler.util;
 
 import com.har01d.crawler.bean.HttpConfig;
 import com.har01d.crawler.exception.ServerSideException;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -9,6 +15,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -21,13 +28,6 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 
 public final class HttpUtils {
 
@@ -38,6 +38,7 @@ public final class HttpUtils {
         LOGGER.debug(userAgent);
         final RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(config.getConnectTimeout())
             .setConnectionRequestTimeout(config.getConnectionRequestTimeout())
+            .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
             .setSocketTimeout(config.getSocketTimeout()).build();
 
         List<Header> headers =
@@ -74,6 +75,7 @@ public final class HttpUtils {
         LOGGER.debug(userAgent);
         final RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(config.getConnectTimeout())
             .setConnectionRequestTimeout(config.getConnectionRequestTimeout())
+            .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
             .setSocketTimeout(config.getSocketTimeout()).build();
 
         List<Header> headers =

@@ -6,6 +6,10 @@ import com.har01d.crawler.bean.ImageInfo;
 import com.har01d.crawler.bean.ParseResult;
 import com.har01d.crawler.service.ZhihuService;
 import com.har01d.crawler.util.HttpUtils;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -18,11 +22,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class QuestionPageParser implements Parser {
 
@@ -57,7 +56,7 @@ public class QuestionPageParser implements Parser {
 
         while (true) {
             offset += pageSize;
-            if (!isFirstParse && offset >= 150) {
+            if (!isFirstParse && offset >= 50) {
                 break;
             }
 
@@ -109,7 +108,7 @@ public class QuestionPageParser implements Parser {
                 Element answer = element.parent().parent();
                 int answerID = Integer.valueOf(answer.attr("data-aid"));
                 Elements images = answer.select("div.zm-item-rich-text img");
-                LOGGER.info("answerID: " + answerID + " vote count: " + voteCount + " images: " + images.size());
+                LOGGER.info("{}/answer/{} vote count: {} images: {}", url, answerID, voteCount, images.size());
                 handleImages(url, images);
             }
         }
