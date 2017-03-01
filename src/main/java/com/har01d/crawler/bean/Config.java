@@ -1,9 +1,9 @@
 package com.har01d.crawler.bean;
 
 import com.har01d.crawler.Downloader;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.concurrent.LinkedBlockingQueue;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 public class Config {
 
@@ -13,9 +13,12 @@ public class Config {
     @Autowired
     private LinkedBlockingQueue<ImageInfo> queue;
 
-    private String imageDirectory;
+    @Value("${collection.crawler.thread.size}")
+    private int crawlerThreads = 1;
 
-    private int poolSize;
+    private String imageDirectory = ".";
+
+    private int poolSize = 10;
 
     public Downloader getDownloader() {
         return downloader;
@@ -49,4 +52,11 @@ public class Config {
         this.poolSize = poolSize;
     }
 
+    public int getCrawlerThreads() {
+        return crawlerThreads;
+    }
+
+    public void setCrawlerThreads(int crawlerThreads) {
+        this.crawlerThreads = crawlerThreads;
+    }
 }

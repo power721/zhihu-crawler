@@ -51,6 +51,10 @@ public class QuestionPageParser implements Parser {
         String html = HttpUtils.getHtml(url, httpConfig);
         Document doc = Jsoup.parse(html);
 
+        String title = doc.select(".zm-item-title").first().text();
+        String answer = doc.select("#zh-question-answer-num").first().text();
+        LOGGER.info("{}: {} {}", url, title, answer);
+
         getImages(url, doc);
         service.updatePageAccessTime(url);
 
@@ -122,7 +126,7 @@ public class QuestionPageParser implements Parser {
             if (isValidImage(imageUrl)) {
                 ImageInfo imageInfo = service.getImageInfo(imageUrl);
                 if (imageInfo == null) {
-                    LOGGER.info("add image url: {}", imageUrl);
+                    LOGGER.info("add image url: {} queue size: {}", imageUrl, queue.size());
                     imageInfo = new ImageInfo(imageUrl, url);
                     queue.put(imageInfo);
                 }

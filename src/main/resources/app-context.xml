@@ -16,7 +16,7 @@
 
     <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean" />
 
-    <bean id="collectionCrawler" class="com.har01d.crawler.impl.CollectionCrawler">
+    <bean id="collectionCrawler" class="com.har01d.crawler.impl.CollectionCrawler" scope="prototype">
     </bean>
 
     <bean id="collectionParser" class="com.har01d.crawler.impl.CollectionPageParser">
