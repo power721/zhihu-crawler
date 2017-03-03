@@ -8,7 +8,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -45,28 +44,22 @@ public final class HttpUtils {
             config.getHeaders().entrySet().stream().map(entry -> new BasicHeader(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
 
-        CloseableHttpClient httpClient =
+        try (CloseableHttpClient httpClient =
             HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultHeaders(headers)
-                .setUserAgent(userAgent).build();
+                .setUserAgent(userAgent).build()) {
 
-        HttpPost httpPost = new HttpPost(url);
-        List<NameValuePair> urlParameters =
-            data.entrySet().stream().map(entry -> new BasicNameValuePair(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
-        httpPost.setEntity(new UrlEncodedFormEntity(urlParameters));
+            HttpPost httpPost = new HttpPost(url);
+            List<NameValuePair> urlParameters =
+                data.entrySet().stream().map(entry -> new BasicNameValuePair(entry.getKey(), entry.getValue()))
+                    .collect(Collectors.toList());
+            httpPost.setEntity(new UrlEncodedFormEntity(urlParameters));
 
-        LOGGER.info("Executing request {}", httpPost.getRequestLine());
+            LOGGER.info("Executing request {}", httpPost.getRequestLine());
 
-        // Create a custom response handler
-        ResponseHandler<String> responseHandler = new MyResponseHandler();
+            // Create a custom response handler
+            ResponseHandler<String> responseHandler = new MyResponseHandler();
 
-        try {
             return httpClient.execute(httpPost, responseHandler);
-        } catch (ServerSideException e) {
-            LOGGER.warn("Parse {} failed: {}, retrying...", url, e.getMessage());
-            return httpClient.execute(httpPost, responseHandler);
-        } finally {
-            IOUtils.closeQuietly(httpClient);
         }
     }
 
@@ -82,23 +75,17 @@ public final class HttpUtils {
             config.getHeaders().entrySet().stream().map(entry -> new BasicHeader(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
 
-        CloseableHttpClient httpClient =
+        try (CloseableHttpClient httpClient =
             HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultHeaders(headers)
-                .setUserAgent(userAgent).build();
-        HttpGet httpget = new HttpGet(url);
+                .setUserAgent(userAgent).build()) {
+            HttpGet httpget = new HttpGet(url);
 
-        LOGGER.info("Executing request {}", httpget.getRequestLine());
+            LOGGER.info("Executing request {}", httpget.getRequestLine());
 
-        // Create a custom response handler
-        ResponseHandler<String> responseHandler = new MyResponseHandler();
+            // Create a custom response handler
+            ResponseHandler<String> responseHandler = new MyResponseHandler();
 
-        try {
             return httpClient.execute(httpget, responseHandler);
-        } catch (ServerSideException e) {
-            LOGGER.warn("Parse {} failed: {}, retrying...", url, e.getMessage());
-            return httpClient.execute(httpget, responseHandler);
-        } finally {
-            IOUtils.closeQuietly(httpClient);
         }
     }
 
@@ -113,6 +100,7 @@ public final class HttpUtils {
     }
 
     private static class MyResponseHandler implements ResponseHandler<String> {
+
         @Override
         public String handleResponse(HttpResponse response) throws IOException {
             int status = response.getStatusLine().getStatusCode();

@@ -74,6 +74,7 @@ public class CollectionCrawler implements Crawler {
             }
         }
 
+        crawlerThreadPool.shutdown();
         try {
             crawlerThreadPool.awaitTermination(1L, TimeUnit.HOURS);
         } catch (InterruptedException e) {
@@ -87,6 +88,7 @@ public class CollectionCrawler implements Crawler {
             questionThreadPool.shutdownNow();
             Thread.currentThread().interrupt();
         }
+        questionThreadPool.shutdown();
     }
 
     @Override
@@ -103,10 +105,10 @@ public class CollectionCrawler implements Crawler {
                 LOGGER.debug(result);
                 for (String pageUrl : result.getUrls()) {
                     if (cache.getIfPresent(pageUrl) == null) {
+                        cache.put(pageUrl, "");
                         questionThreadPool.submit(() -> {
                             try {
                                 questionParser.parse(pageUrl);
-                                cache.put(pageUrl, "");
                             } catch (IOException e) {
                                 LOGGER.error("get html for url {} failed!", pageUrl, e);
                             } catch (InterruptedException e) {

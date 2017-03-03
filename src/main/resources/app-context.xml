@@ -16,7 +16,7 @@
 
     <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean" />
 
-    <bean id="collectionCrawler" class="com.har01d.crawler.impl.CollectionCrawler" scope="prototype">
+    <bean id="collectionCrawler" class="com.har01d.crawler.impl.CollectionCrawler">
     </bean>
 
     <bean id="collectionParser" class="com.har01d.crawler.impl.CollectionPageParser">
@@ -39,8 +39,6 @@
     </bean>
 
     <bean id="config" class="com.har01d.crawler.bean.Config">
-        <property name="imageDirectory" value="${image.directory}"/>
-        <property name="poolSize" value="${image.downloader.size}"/>
     </bean>
 
     <bean id="httpConfig" class="com.har01d.crawler.bean.HttpConfig">

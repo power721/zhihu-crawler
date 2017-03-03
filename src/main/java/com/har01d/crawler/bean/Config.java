@@ -16,8 +16,10 @@ public class Config {
     @Value("${collection.crawler.thread.size}")
     private int crawlerThreads = 1;
 
+    @Value("${image.directory}")
     private String imageDirectory = ".";
 
+    @Value("${image.downloader.size}")
     private int poolSize = 10;
 
     public Downloader getDownloader() {

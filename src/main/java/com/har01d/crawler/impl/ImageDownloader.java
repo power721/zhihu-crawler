@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -24,7 +23,6 @@ import org.apache.http.message.BasicHeader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-
 
 public class ImageDownloader implements Downloader {
 
@@ -59,47 +57,41 @@ public class ImageDownloader implements Downloader {
             httpConfig.getHeaders().entrySet().stream().map(entry -> new BasicHeader(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
 
-        CloseableHttpClient httpClient =
+        try (CloseableHttpClient httpClient =
             HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultHeaders(headers)
-                .setUserAgent(userAgent).setConnectionTimeToLive(600L, TimeUnit.SECONDS).build();
+                .setUserAgent(userAgent).setConnectionTimeToLive(600L, TimeUnit.SECONDS).build()) {
 
-        HttpGet httpget = new HttpGet(imageUrl);
-        LOGGER.info("Executing download request {}", httpget.getRequestLine());
+            HttpGet httpget = new HttpGet(imageUrl);
+            LOGGER.info("Executing download request {}", httpget.getRequestLine());
 
-        // Create a custom response handler
-        ResponseHandler<Boolean> responseHandler = response -> {
-            int status = response.getStatusLine().getStatusCode();
-            if (status >= 200 && status < 300) {
-                HttpEntity entity = response.getEntity();
-                if (entity == null) {
-                    return false;
-                } else {
-                    FileUtils.copyInputStreamToFile(entity.getContent(), file);
-                    long size = entity.getContentLength();
-                    if (size != file.length()) {
-                        LOGGER.warn("download {} failed, expected size {}, got {}!", imageUrl, size, file.length());
+            // Create a custom response handler
+            ResponseHandler<Boolean> responseHandler = response -> {
+                int status = response.getStatusLine().getStatusCode();
+                if (status >= 200 && status < 300) {
+                    HttpEntity entity = response.getEntity();
+                    if (entity == null) {
                         return false;
+                    } else {
+                        FileUtils.copyInputStreamToFile(entity.getContent(), file);
+                        long size = entity.getContentLength();
+                        if (size != file.length()) {
+                            LOGGER.warn("download {} failed, expected size {}, got {}!", imageUrl, size, file.length());
+                            return false;
+                        }
+                        LOGGER.info("download {} completed, file size {}, total download {} images.", imageUrl,
+                            file.length(), counter);
+                        service.insertImage(imageUrl, file.getAbsolutePath(), size);
+                        counter++;
+                        return true;
                     }
-                    LOGGER.info("download {} completed, file size {}, total download {} images.", imageUrl,
-                        file.length(), counter);
-                    service.insertImage(imageUrl, file.getAbsolutePath(), size);
-                    counter++;
-                    return true;
+                } else if (status >= 500 && status <= 599) {
+                    throw new ServerSideException("Unexpected response status: " + status);
+                } else {
+                    throw new ClientProtocolException("Unexpected response status: " + status);
                 }
-            } else if (status >= 500 && status <= 599) {
-                throw new ServerSideException("Unexpected response status: " + status);
-            } else {
-                throw new ClientProtocolException("Unexpected response status: " + status);
-            }
-        };
+            };
 
-        try {
             return httpClient.execute(httpget, responseHandler);
-        } catch (ServerSideException e) {
-            LOGGER.warn("Download {} failed: {}, retrying...", imageUrl, e.getMessage());
-            return httpClient.execute(httpget, responseHandler);
-        } finally {
-            IOUtils.closeQuietly(httpClient);
         }
     }
 

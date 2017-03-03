@@ -33,6 +33,7 @@ public class MainApp {
             downloadThreadPool.submit(workers[i]);
         }
 
+        crawlerThreadPool.shutdown();
         try {
             crawlerThreadPool.awaitTermination(1L, TimeUnit.DAYS);
         } catch (InterruptedException e) {
@@ -40,7 +41,6 @@ public class MainApp {
             Thread.currentThread().interrupt();
         }
 
-        crawlerThreadPool.shutdown();
         downloadThreadPool.shutdown();
         for (Worker worker : workers) {
             worker.done();
