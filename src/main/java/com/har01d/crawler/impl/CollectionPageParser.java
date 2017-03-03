@@ -16,9 +16,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-@Component
 public class CollectionPageParser implements Parser {
 
     private static final Logger LOGGER = LogManager.getLogger(CollectionPageParser.class);

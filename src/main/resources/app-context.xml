@@ -16,6 +16,12 @@
 
     <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean" />
 
+    <bean id="collectionParser" class="com.har01d.crawler.impl.CollectionPageParser">
+    </bean>
+
+    <bean id="questionParser" class="com.har01d.crawler.impl.QuestionPageParser">
+    </bean>
+
     <bean id="queue" class="java.util.concurrent.LinkedBlockingQueue">
         <constructor-arg value="${image.queue.size}"/>
     </bean>
