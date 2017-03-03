@@ -16,17 +16,6 @@
 
     <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean" />
 
-    <bean id="collectionCrawler" class="com.har01d.crawler.impl.CollectionCrawler">
-    </bean>
-
-    <bean id="collectionParser" class="com.har01d.crawler.impl.CollectionPageParser">
-    </bean>
-
-    <bean id="questionParser" class="com.har01d.crawler.impl.QuestionPageParser">
-    </bean>
-
-    <bean id="downloader" class="com.har01d.crawler.impl.ImageDownloader"/>
-
     <bean id="queue" class="java.util.concurrent.LinkedBlockingQueue">
         <constructor-arg value="${image.queue.size}"/>
     </bean>
@@ -36,9 +25,6 @@
         <property name="url" value="${jdbc.url}"/>
         <property name="username" value="${jdbc.username}"/>
         <property name="password" value="${jdbc.password}"/>
-    </bean>
-
-    <bean id="config" class="com.har01d.crawler.bean.Config">
     </bean>
 
     <bean id="httpConfig" class="com.har01d.crawler.bean.HttpConfig">
