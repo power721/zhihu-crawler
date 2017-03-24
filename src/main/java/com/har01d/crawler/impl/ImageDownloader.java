@@ -52,7 +52,7 @@ public class ImageDownloader implements Downloader {
         String userAgent = httpConfig.getUserAgent();
         final RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(httpConfig.getConnectTimeout())
             .setConnectionRequestTimeout(httpConfig.getConnectionRequestTimeout())
-            .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
+            .setCookieSpec(CookieSpecs.STANDARD)
             .setSocketTimeout(httpConfig.getSocketTimeout()).build();
 
         List<Header> headers =
@@ -61,6 +61,7 @@ public class ImageDownloader implements Downloader {
 
         try (CloseableHttpClient httpClient =
             HttpClients.custom().setDefaultRequestConfig(requestConfig).setDefaultHeaders(headers)
+                .setDefaultCookieStore(httpConfig.getCookieStore())
                 .setUserAgent(userAgent).setConnectionTimeToLive(600L, TimeUnit.SECONDS).build()) {
 
             HttpGet httpget = new HttpGet(imageUrl);

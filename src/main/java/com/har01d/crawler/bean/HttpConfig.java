@@ -3,6 +3,9 @@ package com.har01d.crawler.bean;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import javax.annotation.PostConstruct;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.cookie.BasicClientCookie;
 
 public class HttpConfig {
 
@@ -15,6 +18,16 @@ public class HttpConfig {
     private int connectTimeout = CONNECTION_TIMEOUT_MS;
     private int connectionRequestTimeout = CONNECTION_REQUEST_TIMEOUT_MS;
     private int socketTimeout = SOCKET_TIMEOUT_MS;
+    private String token;
+    private BasicCookieStore cookieStore = new BasicCookieStore();
+
+    @PostConstruct
+    public void init() {
+        BasicClientCookie cookie = new BasicClientCookie("z_c0", token);
+        cookie.setDomain("www.zhihu.com");
+        cookie.setPath("/");
+        cookieStore.addCookie(cookie);
+    }
 
     public Map<String, String> getHeaders() {
         return headers;
@@ -59,6 +72,14 @@ public class HttpConfig {
 
     public void setSocketTimeout(int socketTimeout) {
         this.socketTimeout = socketTimeout;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public BasicCookieStore getCookieStore() {
+        return cookieStore;
     }
 
     @Override

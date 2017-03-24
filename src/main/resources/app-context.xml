@@ -37,6 +37,7 @@
         <property name="connectTimeout" value="${connection.timeout}"/>
         <property name="connectionRequestTimeout" value="${connection.request.timeout}"/>
         <property name="socketTimeout" value="${socket.timeout}"/>
+        <property name="token" value="${token}"/>
         <property name="headers">
             <map>
                 <entry key="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"/>

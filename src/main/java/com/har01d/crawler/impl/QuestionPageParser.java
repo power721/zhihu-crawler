@@ -7,6 +7,7 @@ import com.har01d.crawler.bean.ParseResult;
 import com.har01d.crawler.service.ZhihuService;
 import com.har01d.crawler.util.HttpUtils;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -26,7 +27,6 @@ import org.springframework.beans.factory.annotation.Value;
 public class QuestionPageParser implements Parser {
 
     private static final Logger LOGGER = LogManager.getLogger(QuestionPageParser.class);
-    private static final int MIN_VOTE = 30;
 
     @Autowired
     private ZhihuService service;
@@ -44,33 +44,21 @@ public class QuestionPageParser implements Parser {
     private String zhihuURL;
 
     @Override
-    public ParseResult parse(String url) throws IOException, InterruptedException {
+    public ParseResult parse(String url) throws IOException, InterruptedException, URISyntaxException {
         int offset = 0;
-        int pageSize = 50;
+        int pageSize = 20;
+        String id = getQuestionId(url);
         boolean isFirstParse = service.getPageAccessTime(url) != 0;
-        String html = HttpUtils.getHtml(url, httpConfig);
-        Document doc = Jsoup.parse(html);
-
-        String title = doc.select(".zm-item-title").first().text();
-        String answer = doc.select("#zh-question-answer-num").first().text();
-        LOGGER.info("{}: {} {}", url, title, answer);
-
-        getImages(url, doc);
-        service.updatePageAccessTime(url);
 
         while (true) {
-            offset += pageSize;
-            if (!isFirstParse && offset >= 50) {
-                break;
-            }
-
             Map<String, String> data = new HashMap<>();
-            data.put("method", "next");
-            data.put("params",
-                "{\"url_token\":" + getUrlToken(url) + ",\"pagesize\":" + pageSize + ",\"offset\":" + offset + "}");
+            data.put("sort_by", "default");
+            data.put("include",
+                "data[*].is_normal,is_sticky,collapsed_by,suggest_edit,comment_count,collapsed_counts,reviewing_comments_count,can_comment,content,editable_content,voteup_count,reshipment_settings,comment_permission,mark_infos,created_time,updated_time,relationship.is_authorized,is_author,voting,is_thanked,is_nothelp,upvoted_followees;data[*].author.is_blocking,is_blocked,is_followed,voteup_count,message_thread_token,badge[?(type=best_answerer)].topics");
+            data.put("limit", String.valueOf(pageSize));
+            data.put("offset", String.valueOf(offset));
             LOGGER.info("url: {}, pageSize: {}, offset: {}", url, pageSize, offset);
-            String json = HttpUtils.post(zhihuURL + "/node/QuestionAnswerListV2", data, httpConfig);
-            //            LOGGER.debug(json);
+            String json = HttpUtils.get(zhihuURL + "/api/v4/questions/" + id + "/answers", data, httpConfig);
 
             JSONParser parser = new JSONParser();
             JSONObject jsonObject;
@@ -81,19 +69,23 @@ public class QuestionPageParser implements Parser {
                 throw new IOException("parse JSON failed", e);
             }
 
-            JSONArray items = (JSONArray) jsonObject.get("msg");
+            JSONArray items = (JSONArray) jsonObject.get("data");
             if (items.isEmpty()) {
                 break;
             }
 
-            int maxVote = 0;
             for (Object item : items) {
-                html = (String) item;
-                doc = Jsoup.parse(html);
-                int vote = getImages(url, doc);
-                maxVote = Math.max(maxVote, vote);
+                JSONObject object = (JSONObject) item;
+                String html = (String) object.get("content");
+                if (html == null) {
+                    continue;
+                }
+                Document doc = Jsoup.parse(html);
+                getImages(url, doc);
             }
-            if (maxVote < MIN_VOTE) {
+
+            offset += items.size();
+            if (!isFirstParse && offset >= 20) {
                 break;
             }
             Thread.sleep(sleep);
@@ -102,21 +94,21 @@ public class QuestionPageParser implements Parser {
         return null;
     }
 
-    private int getImages(String url, Document doc) throws InterruptedException {
-        Elements votes = doc.select("div.zm-item-vote-info");
-        int maxVote = 0;
-        for (Element element : votes) {
-            int voteCount = Integer.valueOf(element.attr("data-votecount"));
-            maxVote = Math.max(maxVote, voteCount);
-            if (voteCount >= MIN_VOTE) {
-                Element answer = element.parent().parent();
-                int answerID = Integer.valueOf(answer.attr("data-aid"));
-                Elements images = answer.select("div.zm-item-rich-text img");
-                LOGGER.info("{}/answer/{} vote count: {} images: {}", url, answerID, voteCount, images.size());
-                handleImages(url, images);
+    private String getQuestionId(String url) {
+        String[] comps = url.split("/");
+        for (int i = 0; i < comps.length; ++i) {
+            if ("question".equals(comps[i])) {
+                if (i + 1 < comps.length) {
+                    return comps[i + 1];
+                }
             }
         }
-        return maxVote;
+        return null;
+    }
+
+    private void getImages(String url, Document doc) throws InterruptedException {
+        Elements images = doc.select("img");
+        handleImages(url, images);
     }
 
     private void handleImages(String url, Elements images) throws InterruptedException {
@@ -136,10 +128,6 @@ public class QuestionPageParser implements Parser {
 
     private boolean isValidImage(String imageUrl) {
         return imageUrl != null && !imageUrl.isEmpty() && imageUrl.contains("zhimg.com") && imageUrl.contains("_b.");
-    }
-
-    private String getUrlToken(String url) {
-        return url.substring((zhihuURL + "/question/").length(), url.length());
     }
 
 }

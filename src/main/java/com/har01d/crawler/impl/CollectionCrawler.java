@@ -6,6 +6,7 @@ import com.har01d.crawler.Crawler;
 import com.har01d.crawler.Parser;
 import com.har01d.crawler.bean.ParseResult;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -78,7 +79,7 @@ public class CollectionCrawler implements Crawler {
 
         crawlerThreadPool.shutdown();
         try {
-            crawlerThreadPool.awaitTermination(1L, TimeUnit.HOURS);
+            crawlerThreadPool.awaitTermination(3L, TimeUnit.HOURS);
         } catch (InterruptedException e) {
             crawlerThreadPool.shutdownNow();
             Thread.currentThread().interrupt();
@@ -111,10 +112,10 @@ public class CollectionCrawler implements Crawler {
                         questionThreadPool.submit(() -> {
                             try {
                                 questionParser.parse(pageUrl);
-                            } catch (IOException e) {
-                                LOGGER.error("get html for url {} failed!", pageUrl, e);
                             } catch (InterruptedException e) {
                                 // ignore
+                            } catch (Exception e) {
+                                LOGGER.error("get html for url {} failed!", pageUrl, e);
                             }
                         });
                     }
@@ -126,7 +127,7 @@ public class CollectionCrawler implements Crawler {
 
                 url = result.getNextUrl();
                 Thread.sleep(sleep);
-            } catch (IOException e) {
+            } catch (URISyntaxException | IOException e) {
                 LOGGER.error("get html {} failed!", url, e);
             }
         }
